@@ -1,4 +1,6 @@
 import math
+from collections.abc import Callable
+from functools import partial
 from timeit import timeit
 
 
@@ -97,13 +99,25 @@ def benchmark() -> None:
     Compare digit-counting functions at three integer sizes.
 
     Timings are reported per call and vary by machine and Python version.
-    """
-    from collections.abc import Callable
 
-    def benchmark_a_function(func: Callable, value: int) -> None:
-        call = f"{func.__name__}({value})"
+    >>> benchmark()  # doctest: +ELLIPSIS
+    num_digits(19 bits): 6 digits, ... seconds per call
+    num_digits_fast(19 bits): 6 digits, ... seconds per call
+    num_digits_faster(19 bits): 6 digits, ... seconds per call
+    <BLANKLINE>
+    num_digits(51 bits): 16 digits, ... seconds per call
+    num_digits_fast(51 bits): 16 digits, ... seconds per call
+    num_digits_faster(51 bits): 16 digits, ... seconds per call
+    <BLANKLINE>
+    num_digits(101 bits): 31 digits, ... seconds per call
+    num_digits_fast(101 bits): 31 digits, ... seconds per call
+    num_digits_faster(101 bits): 31 digits, ... seconds per call
+    <BLANKLINE>
+    """
+
+    def benchmark_a_function(func: Callable[[int], int], value: int) -> None:
         iterations = 100_000
-        timing = timeit(f"__main__.{call}", setup="import __main__", number=iterations)
+        timing = timeit(partial(func, value), number=iterations)
         print(
             f"{func.__name__}({value.bit_length()} bits): {func(value)} digits, "
             f"{timing / iterations:.9f} seconds per call"
