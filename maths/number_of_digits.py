@@ -68,6 +68,9 @@ def num_digits_faster(n: int) -> int:
     Find the number of digits in a number.
     abs() is used for negative numbers.
 
+    Converting an integer to a string can raise ValueError when it exceeds
+    Python's configured integer-string conversion limit (4300 digits by default).
+
     >>> num_digits_faster(12345)
     5
     >>> num_digits_faster(123)
@@ -91,14 +94,20 @@ def num_digits_faster(n: int) -> int:
 
 def benchmark() -> None:
     """
-    Benchmark multiple functions with three different integer sizes.
+    Compare digit-counting functions at three integer sizes.
+
+    Timings are reported per call and vary by machine and Python version.
     """
     from collections.abc import Callable
 
     def benchmark_a_function(func: Callable, value: int) -> None:
         call = f"{func.__name__}({value})"
-        timing = timeit(f"__main__.{call}", setup="import __main__")
-        print(f"{call}: {func(value)} -- {timing:.6f} seconds")
+        iterations = 100_000
+        timing = timeit(f"__main__.{call}", setup="import __main__", number=iterations)
+        print(
+            f"{func.__name__}({value.bit_length()} bits): {func(value)} digits, "
+            f"{timing / iterations:.9f} seconds per call"
+        )
 
     for value in (262144, 1125899906842624, 1267650600228229401496703205376):
         for func in (num_digits, num_digits_fast, num_digits_faster):
